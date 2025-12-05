@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bixfee - پنل کاربری</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p id="loading-text">در حال بارگذاری...</p>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>👑 Bixfee</h1>
+                    <p id="user-name">کاربر</p>
+                </div>
+                <div class="header-actions">
+                    <button id="lang-toggle" class="icon-btn" title="تغییر زبان">
+                        <span>🌐</span>
+                    </button>
+                    <button id="refresh-btn" class="icon-btn" title="به‌روزرسانی">
+                        <span>🔄</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-page="dashboard">
+                <span class="tab-icon">🏠</span>
+                <span class="tab-text" data-i18n="nav.dashboard">داشبورد</span>
+            </button>
+            <button class="nav-tab" data-page="prices">
+                <span class="tab-icon">📊</span>
+                <span class="tab-text" data-i18n="nav.prices">قیمت‌ها</span>
+            </button>
+            <button class="nav-tab" data-page="trading">
+                <span class="tab-icon">💱</span>
+                <span class="tab-text" data-i18n="nav.trading">معاملات</span>
+            </button>
+            <button class="nav-tab" data-page="profile">
+                <span class="tab-icon">👤</span>
+                <span class="tab-text" data-i18n="nav.profile">پروفایل</span>
+            </button>
+        </nav>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <!-- Balance Card -->
+            <div class="card balance-card">
+                <div class="card-header">
+                    <h3 data-i18n="dashboard.balance">موجودی کیف پول</h3>
+                </div>
+                <div class="card-body">
+                    <div class="balance-amount">
+                        <span id="balance-value" class="amount">0</span>
+                        <span class="currency">تومان</span>
+                    </div>
+                    <div class="balance-actions">
+                        <button class="btn-primary" onclick="showPage('charge')">
+                            <span data-i18n="dashboard.charge">شارژ</span>
+                        </button>
+                        <button class="btn-secondary" onclick="showPage('withdraw')">
+                            <span data-i18n="dashboard.withdraw">برداشت</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="dashboard.quick_actions">دسترسی سریع</h3>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" onclick="showPage('forex')">
+                            <span class="icon">📈</span>
+                            <span data-i18n="dashboard.forex">بازار فارکس</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showPage('convert')">
+                            <span class="icon">🔄</span>
+                            <span data-i18n="dashboard.convert">تبدیل ارز</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showPage('visa')">
+                            <span class="icon">💳</span>
+                            <span data-i18n="dashboard.visa">ویزا کارت</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showPage('gift')">
+                            <span class="icon">🎁</span>
+                            <span data-i18n="dashboard.gift">گیفت کارت</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showPage('referral')">
+                            <span class="icon">🤝</span>
+                            <span data-i18n="dashboard.referral">همکاری</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showPage('support')">
+                            <span class="icon">💬</span>
+                            <span data-i18n="dashboard.support">پشتیبانی</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="dashboard.recent_transactions">تراکنش‌های اخیر</h3>
+                    <button class="link-btn" onclick="showPage('transactions')">
+                        <span data-i18n="dashboard.view_all">مشاهده همه</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="recent-transactions" class="transactions-list">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prices Page -->
+        <div id="prices-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="prices.live_rates">قیمت‌های لحظه‌ای</h3>
+                    <button class="icon-btn" onclick="refreshPrices()">
+                        <span>🔄</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="rates-container" class="rates-grid">
+                        <!-- Rates will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Page -->
+        <div id="trading-page" class="page">
+            <div class="trading-tabs">
+                <button class="trading-tab active" data-trading="buy">
+                    <span data-i18n="trading.buy">خرید</span>
+                </button>
+                <button class="trading-tab" data-trading="sell">
+                    <span data-i18n="trading.sell">فروش</span>
+                </button>
+            </div>
+
+            <div id="trading-content" class="trading-content">
+                <!-- Trading forms will be shown here -->
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="profile.user_info">اطلاعات کاربری</h3>
+                </div>
+                <div class="card-body">
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <span class="label" data-i18n="profile.level">سطح:</span>
+                            <span id="user-level" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label" data-i18n="profile.xp">امتیاز:</span>
+                            <span id="user-xp" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label" data-i18n="profile.transactions">تراکنش‌ها:</span>
+                            <span id="user-transactions" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label" data-i18n="profile.volume">حجم معاملات:</span>
+                            <span id="user-volume" class="value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="profile.settings">تنظیمات</h3>
+                </div>
+                <div class="card-body">
+                    <div class="settings-list">
+                        <button class="setting-item" onclick="showPage('language')">
+                            <span class="setting-icon">🌐</span>
+                            <span class="setting-text" data-i18n="profile.language">زبان</span>
+                            <span class="setting-arrow">›</span>
+                        </button>
+                        <button class="setting-item" onclick="showPage('security')">
+                            <span class="setting-icon">🔐</span>
+                            <span class="setting-text" data-i18n="profile.security">امنیت</span>
+                            <span class="setting-arrow">›</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forex Page -->
+        <div id="forex-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="forex.title">بازار فارکس</h3>
+                </div>
+                <div class="card-body">
+                    <div id="forex-rates" class="forex-grid">
+                        <!-- Forex rates will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Convert Page -->
+        <div id="convert-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="convert.title">تبدیل ارز</h3>
+                </div>
+                <div class="card-body">
+                    <div class="convert-options">
+                        <button class="convert-option" onclick="showConvertForm('usdt_to_voucher')">
+                            <span class="icon">💱</span>
+                            <span data-i18n="convert.usdt_to_voucher">تتر به ووچر</span>
+                        </button>
+                        <button class="convert-option" onclick="showConvertForm('voucher_to_usdt')">
+                            <span class="icon">🔄</span>
+                            <span data-i18n="convert.voucher_to_usdt">ووچر به تتر</span>
+                        </button>
+                    </div>
+                    <div id="convert-form" class="convert-form" style="display: none;">
+                        <!-- Convert form will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referral Page -->
+        <div id="referral-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h3 data-i18n="referral.title">همکاری در فروش</h3>
+                </div>
+                <div class="card-body">
+                    <div class="referral-info">
+                        <div class="referral-link-section">
+                            <label data-i18n="referral.link">لینک معرفی شما:</label>
+                            <div class="referral-link-box">
+                                <input type="text" id="referral-link" readonly>
+                                <button class="copy-btn" onclick="copyReferralLink()">
+                                    <span data-i18n="referral.copy">کپی</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="referral-stats">
+                            <div class="stat-item">
+                                <span class="stat-label" data-i18n="referral.referrals">معرفی‌ها:</span>
+                                <span id="referrals-count" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label" data-i18n="referral.commission">کمیسیون:</span>
+                                <span id="commission-amount" class="stat-value">0 تومان</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
